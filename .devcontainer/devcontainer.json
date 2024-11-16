@@ -1,0 +1,22 @@
+{
+  "name": "PhotoSlideShow",
+  "image": "mikoto2000/tauri2",
+  "remoteEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+    "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+    "PULSE_SERVER": "${localEnv:PULSE_SERVER}",
+  },
+  "mounts": [
+    {
+      "type": "bind",
+      "source": "/tmp/.X11-unix",
+      "target": "/tmp/.X11-unix"
+    },
+    {
+      "type": "bind",
+      "source": "/mnt/wslg",
+      "target": "/mnt/wslg"
+    },
+  ],
+}
