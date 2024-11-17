@@ -2,9 +2,12 @@ import { useState } from "react";
 import "./App.css";
 import { open } from "@tauri-apps/plugin-dialog";
 import { DirEntry, readDir } from "@tauri-apps/plugin-fs";
+import { path } from "@tauri-apps/api";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
+  const [currentImagePath, setCurrentImagePath] = useState("");
 
   async function getImageEntry() {
     let dir = await open({
@@ -14,7 +17,10 @@ function App() {
     if (dir) {
       const entries = await readDir(dir);
       const filterdEntries = entries.filter((entry) => entry.isFile && isImage(entry));
-      setGreetMsg(JSON.stringify(filterdEntries));
+      const tmp = await path.join(dir, filterdEntries[0].name);
+      setGreetMsg(tmp);
+      setCurrentImagePath(convertFileSrc(tmp));
+
     }
   }
 
@@ -35,6 +41,7 @@ function App() {
       >
         <button type="submit">ディレクトリ選択</button>
       </form>
+      <img src={currentImagePath}></img>
       <p>{greetMsg}</p>
     </main>
   );
