@@ -1,22 +1,28 @@
 import { useState } from "react";
 import "./App.css";
 import { open } from "@tauri-apps/plugin-dialog";
-import { readDir } from "@tauri-apps/plugin-fs";
+import { DirEntry, readDir } from "@tauri-apps/plugin-fs";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
 
-  async function getEntry() {
+  async function getImageEntry() {
     let dir = await open({
       multiple: false,
       directory: true,
     });
     if (dir) {
       const entries = await readDir(dir);
-      setGreetMsg(JSON.stringify(entries));
+      const filterdEntries = entries.filter((entry) => entry.isFile && isImage(entry));
+      setGreetMsg(JSON.stringify(filterdEntries));
     }
   }
 
+  const isImage = (entry: DirEntry): boolean => {
+    const parts = entry.name.split('.');
+    const ext = parts.length > 1 ? parts[parts.length - 1] : "";
+    return ["jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "svg"].includes(ext.toLowerCase());
+  }
 
   return (
     <main className="container">
@@ -24,7 +30,7 @@ function App() {
         className="row"
         onSubmit={(e) => {
           e.preventDefault();
-          getEntry();
+          getImageEntry();
         }}
       >
         <button type="submit">ディレクトリ選択</button>
