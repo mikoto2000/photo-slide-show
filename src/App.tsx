@@ -10,7 +10,7 @@ function App() {
   const [dir, setDir] = useState("");
   const [imageEntries, setImageEntries] = useState<DirEntry[]>([]);
   const [currentImagePath, setCurrentImagePath] = useState("");
-  const [interval, _setInterval] = useState(1000);
+  const [interval, setInterval] = useState(5000);
   const [imageIndex, setImageIndex] = useState(0);
   let initialized = false;
 
@@ -62,6 +62,13 @@ function App() {
       >
         <button type="submit">ディレクトリ選択</button>
       </form>
+      <input
+        type="number"
+        value={interval}
+        onChange={(e) => {
+          setInterval(Number(e.currentTarget.value));
+        }}
+      ></input>
       <img src={currentImagePath}></img>
       <p>{greetMsg}</p>
       <p>{imageIndex}</p>
