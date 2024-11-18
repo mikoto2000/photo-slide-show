@@ -61,7 +61,7 @@ function App() {
   }
 
   return (
-    <main className="container" style={{ maxHeight: "100vh" }}>
+    <main className="container">
       <div style={{ flexGrow: "1" }}>
         <form
           className="row"
@@ -69,6 +69,7 @@ function App() {
             e.preventDefault();
             getImageEntry();
           }}
+          style={{ display: "inline" }}
         >
           <button type="submit">フォトディレクトリ選択</button>
         </form>
@@ -80,7 +81,7 @@ function App() {
           }}
         ></input>
       </div>
-        <img src={currentImagePath} style={{ maxHeight: "90%", objectFit: "contain" }}></img>
+      <img src={currentImagePath} style={{ maxHeight: "90vh", objectFit: "contain" }}></img>
       <div style={{ flexGrow: "1" }}>
         <p>{filePath}</p>
       </div>
