@@ -61,26 +61,30 @@ function App() {
   }
 
   return (
-    <main className="container">
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          getImageEntry();
-        }}
-      >
-        <button type="submit">フォトディレクトリ選択</button>
-      </form>
-      インターバル：<input
-        type="number"
-        value={intervalValue}
-        onChange={(e) => {
-          setIntervalValue(Number(e.currentTarget.value));
-        }}
-      ></input>
-      <img src={currentImagePath}></img>
-      <p>{filePath}</p>
-    </main>
+    <main className="container" style={{ maxHeight: "100vh" }}>
+      <div style={{ flexGrow: "1" }}>
+        <form
+          className="row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            getImageEntry();
+          }}
+        >
+          <button type="submit">フォトディレクトリ選択</button>
+        </form>
+        インターバル：<input
+          type="number"
+          value={intervalValue}
+          onChange={(e) => {
+            setIntervalValue(Number(e.currentTarget.value));
+          }}
+        ></input>
+      </div>
+        <img src={currentImagePath} style={{ maxHeight: "90%", objectFit: "contain" }}></img>
+      <div style={{ flexGrow: "1" }}>
+        <p>{filePath}</p>
+      </div>
+    </main >
   );
 }
 
