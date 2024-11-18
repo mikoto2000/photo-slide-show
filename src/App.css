@@ -23,10 +23,8 @@
 
 .container {
   margin: 0;
-  padding-top: 10vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   text-align: center;
 }
 
@@ -113,4 +111,10 @@ button {
   button:active {
     background-color: #0f0f0f69;
   }
+}
+
+html, body, main {
+  height: 100vh;
+  margin: 0px;
+  padding: 0px;
 }

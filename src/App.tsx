@@ -6,7 +6,7 @@ import { path } from "@tauri-apps/api";
 import { convertFileSrc } from "@tauri-apps/api/core";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
+  const [filePath, setFilePath] = useState("");
   const [dir, setDir] = useState("");
   const [imageEntries, setImageEntries] = useState<DirEntry[]>([]);
   const [currentImagePath, setCurrentImagePath] = useState("");
@@ -22,7 +22,7 @@ function App() {
           console.log("KITAYO!!!");
           const nextImageIndex = (imageIndex + 1) % imageEntries.length;
           const tmp = await path.join(dir, imageEntries[nextImageIndex].name);
-          setGreetMsg(tmp);
+          setFilePath(tmp);
           setImageIndex(nextImageIndex);
           setCurrentImagePath(convertFileSrc(tmp));
         }
@@ -69,9 +69,9 @@ function App() {
           getImageEntry();
         }}
       >
-        <button type="submit">ディレクトリ選択</button>
+        <button type="submit">フォトディレクトリ選択</button>
       </form>
-      <input
+      インターバル：<input
         type="number"
         value={intervalValue}
         onChange={(e) => {
@@ -79,9 +79,7 @@ function App() {
         }}
       ></input>
       <img src={currentImagePath}></img>
-      <p>{greetMsg}</p>
-      <p>{imageIndex}</p>
-      <p>{imageEntries.length}</p>
+      <p>{filePath}</p>
     </main>
   );
 }
