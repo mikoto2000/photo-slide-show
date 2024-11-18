@@ -10,38 +10,47 @@ function App() {
   const [dir, setDir] = useState("");
   const [imageEntries, setImageEntries] = useState<DirEntry[]>([]);
   const [currentImagePath, setCurrentImagePath] = useState("");
-  const [interval, setInterval] = useState(5000);
+  const [intervalValue, setIntervalValue] = useState(5000);
   const [imageIndex, setImageIndex] = useState(0);
   let initialized = false;
 
   useEffect(() => {
+    let intervalHandle = undefined;
     if (!initialized) {
-      switchImage();
+      intervalHandle = setTimeout(async () => {
+        if (dir && dir.length > 0) {
+          console.log("KITAYO!!!");
+          const nextImageIndex = (imageIndex + 1) % imageEntries.length;
+          const tmp = await path.join(dir, imageEntries[nextImageIndex].name);
+          setGreetMsg(tmp);
+          setImageIndex(nextImageIndex);
+          setCurrentImagePath(convertFileSrc(tmp));
+        }
+      }, intervalValue);
       initialized = true;
     }
-  });
-
-  const switchImage = () => {
-    setTimeout(async () => {
-      const tmp = await path.join(dir, imageEntries[imageIndex].name);
-      setGreetMsg(tmp);
-      setCurrentImagePath(convertFileSrc(tmp));
-
-      setImageIndex((imageIndex + 1) % imageEntries.length);
-      switchImage();
-    }, interval);
-  };
+    return () => {
+      if (intervalValue) {
+        clearInterval(intervalHandle);
+      }
+    }
+  }, [intervalValue, imageEntries, imageIndex]);
 
   async function getImageEntry() {
     let dir = await open({
       multiple: false,
       directory: true,
     });
-    if (dir) {
+    if (dir && dir.length > 0) {
       setDir(dir);
       const entries = await readDir(dir);
       const filterdEntries = entries.filter((entry) => entry.isFile && isImage(entry));
       setImageEntries(filterdEntries);
+      setImageIndex(0);
+      const tmp = await path.join(dir, filterdEntries[0].name);
+      setTimeout(() => {
+        setCurrentImagePath(convertFileSrc(tmp));
+      });
     }
   }
 
@@ -64,14 +73,15 @@ function App() {
       </form>
       <input
         type="number"
-        value={interval}
+        value={intervalValue}
         onChange={(e) => {
-          setInterval(Number(e.currentTarget.value));
+          setIntervalValue(Number(e.currentTarget.value));
         }}
       ></input>
       <img src={currentImagePath}></img>
       <p>{greetMsg}</p>
       <p>{imageIndex}</p>
+      <p>{imageEntries.length}</p>
     </main>
   );
 }
