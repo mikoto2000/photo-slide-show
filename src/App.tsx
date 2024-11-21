@@ -4,8 +4,10 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { DirEntry, readDir } from "@tauri-apps/plugin-fs";
 import { path } from "@tauri-apps/api";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { load, Store } from "@tauri-apps/plugin-store";
 
 function App() {
+  const [store, setStore] = useState<Store | undefined>(undefined);
   const [filePath, setFilePath] = useState("");
   const [dir, setDir] = useState("");
   const [imageEntries, setImageEntries] = useState<DirEntry[]>([]);
@@ -15,11 +17,24 @@ function App() {
   let initialized = false;
 
   useEffect(() => {
+
+    (async () => {
+
+      const s = await load('store.json', { autoSave: true });
+      setStore(s);
+      const i = await s.get<number>('interval');
+      if (i) {
+        setIntervalValue(i);
+      }
+    })();
+
+  }, []);
+
+  useEffect(() => {
     let intervalHandle = undefined;
     if (!initialized) {
       intervalHandle = setTimeout(async () => {
         if (dir && dir.length > 0) {
-          console.log("KITAYO!!!");
           const nextImageIndex = (imageIndex + 1) % imageEntries.length;
           const tmp = await path.join(dir, imageEntries[nextImageIndex].name);
           setFilePath(tmp);
@@ -77,7 +92,12 @@ function App() {
           type="number"
           value={intervalValue}
           onChange={(e) => {
-            setIntervalValue(Number(e.currentTarget.value));
+            const v = Number(e.currentTarget.value);
+            setIntervalValue(v);
+
+            if (store) {
+              store.set("interval", v);
+            }
           }}
         ></input>
       </div>
