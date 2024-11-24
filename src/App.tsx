@@ -71,6 +71,8 @@ function App() {
       console.log(entries);
       const filterdEntries = entries.filter((entry) => entry.isFile && isImage(entry));
       console.log(filterdEntries);
+      shuffle(filterdEntries);
+      console.log(filterdEntries);
       setImageEntries(filterdEntries);
       setImageIndex(0);
       setTimeout(() => {
@@ -78,6 +80,13 @@ function App() {
       });
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
   }
 
