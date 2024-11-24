@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { open } from "@tauri-apps/plugin-dialog";
-import { DirEntry, readDir } from "@tauri-apps/plugin-fs";
-import { path } from "@tauri-apps/api";
+import { DirEntry } from "@tauri-apps/plugin-fs";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { load, Store } from "@tauri-apps/plugin-store";
+import { useTauriService } from "./service/TauriService";
+import { Service } from "./service/Service";
 
 function App() {
   const [store, setStore] = useState<Store | undefined>(undefined);
@@ -16,16 +17,29 @@ function App() {
   const [imageIndex, setImageIndex] = useState(0);
   let initialized = false;
 
+  const service: Service = useTauriService();
+
   useEffect(() => {
 
     (async () => {
 
-      const s = await load('store.json', { autoSave: true });
-      setStore(s);
-      const i = await s.get<number>('interval');
-      if (i) {
-        setIntervalValue(i);
+      if (!store) {
+
+        const s = await load('store.json', { autoSave: true });
+        setStore(s);
+        const i = await s.get<number>('interval');
+        if (i) {
+          setIntervalValue(i);
+        }
+
+        //const d = await s.get<string>('dir');
+        //if (d) {
+        //  console.log(d);
+        //  setDir(d);
+        //  updateEntries(d);
+        //}
       }
+
     })();
 
   }, []);
@@ -36,10 +50,9 @@ function App() {
       intervalHandle = setTimeout(async () => {
         if (dir && dir.length > 0) {
           const nextImageIndex = (imageIndex + 1) % imageEntries.length;
-          const tmp = await path.join(dir, imageEntries[nextImageIndex].name);
-          setFilePath(tmp);
+          setFilePath(imageEntries[nextImageIndex].name);
           setImageIndex(nextImageIndex);
-          setCurrentImagePath(convertFileSrc(tmp));
+          setCurrentImagePath(convertFileSrc(imageEntries[nextImageIndex].name));
         }
       }, intervalValue);
       initialized = true;
@@ -49,30 +62,45 @@ function App() {
         clearInterval(intervalHandle);
       }
     }
-  }, [intervalValue, imageEntries, imageIndex]);
+  }, [dir, intervalValue, imageEntries, imageIndex]);
+
+  async function updateEntries(dir: string) {
+    try {
+      console.log(`dir: ${dir}`);
+      const entries = await service.readDir(dir);
+      console.log(entries);
+      const filterdEntries = entries.filter((entry) => entry.isFile && isImage(entry));
+      console.log(filterdEntries);
+      setImageEntries(filterdEntries);
+      setImageIndex(0);
+      setTimeout(() => {
+        setCurrentImagePath(convertFileSrc(filterdEntries[0].name));
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   async function getImageEntry() {
-    let dir = await open({
+    let newDir = await open({
       multiple: false,
       directory: true,
     });
-    if (dir && dir.length > 0) {
-      setDir(dir);
-      const entries = await readDir(dir);
-      const filterdEntries = entries.filter((entry) => entry.isFile && isImage(entry));
-      setImageEntries(filterdEntries);
-      setImageIndex(0);
-      const tmp = await path.join(dir, filterdEntries[0].name);
-      setTimeout(() => {
-        setCurrentImagePath(convertFileSrc(tmp));
-      });
+    if (newDir && newDir.length > 0) {
+      setDir(newDir);
+
+      if (store) {
+        store.set("dir", newDir);
+      }
+
+      updateEntries(newDir);
     }
   }
 
   const isImage = (entry: DirEntry): boolean => {
     const parts = entry.name.split('.');
     const ext = parts.length > 1 ? parts[parts.length - 1] : "";
-    return ["jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "svg"].includes(ext.toLowerCase());
+    return ["jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff"].includes(ext.toLowerCase());
   }
 
   return (
