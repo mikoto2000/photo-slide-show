@@ -15,6 +15,7 @@ function App() {
   const [currentImagePath, setCurrentImagePath] = useState("");
   const [intervalValue, setIntervalValue] = useState(5000);
   const [imageIndex, setImageIndex] = useState(0);
+  const [isRandom, setRandom] = useState(true);
   let initialized = false;
 
   const service: Service = useTauriService();
@@ -30,6 +31,11 @@ function App() {
         const i = await s.get<number>('interval');
         if (i) {
           setIntervalValue(i);
+        }
+
+        const r = await s.get<boolean>('isRandom');
+        if (r !== undefined) {
+          setRandom(r);
         }
 
         //const d = await s.get<string>('dir');
@@ -71,6 +77,10 @@ function App() {
       console.log(entries);
       const filterdEntries = entries.filter((entry) => entry.isFile && isImage(entry));
       console.log(filterdEntries);
+      if (isRandom) {
+        shuffle(filterdEntries);
+      }
+      console.log(filterdEntries);
       setImageEntries(filterdEntries);
       setImageIndex(0);
       setTimeout(() => {
@@ -78,6 +88,13 @@ function App() {
       });
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  function shuffle(array: Array<any>) {
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
   }
 
@@ -106,6 +123,18 @@ function App() {
   return (
     <main className="container">
       <div style={{ flexGrow: "1" }}>
+        ランダム：<input
+          type="checkbox"
+          checked={isRandom}
+          onChange={(e) => {
+            const v = e.currentTarget.checked;
+            setRandom(v);
+
+            if (store) {
+              store.set("isRandom", v);
+            }
+          }}
+        ></input>
         <form
           className="row"
           onSubmit={(e) => {
