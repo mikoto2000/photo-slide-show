@@ -16,6 +16,7 @@ function App() {
   const [intervalValue, setIntervalValue] = useState(5000);
   const [imageIndex, setImageIndex] = useState(0);
   const [isRandom, setRandom] = useState(true);
+  const [isPause, setPause] = useState(false);
   let initialized = false;
 
   const service: Service = useTauriService();
@@ -52,7 +53,7 @@ function App() {
 
   useEffect(() => {
     let intervalHandle = undefined;
-    if (!initialized) {
+    if (!initialized && !isPause) {
       intervalHandle = setTimeout(async () => {
         if (dir && dir.length > 0) {
           const nextImageIndex = (imageIndex + 1) % imageEntries.length;
@@ -64,11 +65,11 @@ function App() {
       initialized = true;
     }
     return () => {
-      if (intervalValue) {
+      if (intervalHandle) {
         clearInterval(intervalHandle);
       }
     }
-  }, [dir, intervalValue, imageEntries, imageIndex]);
+  }, [dir, intervalValue, imageEntries, imageIndex, isPause]);
 
   async function updateEntries(dir: string) {
     try {
@@ -155,6 +156,13 @@ function App() {
             if (store) {
               store.set("interval", v);
             }
+          }}
+        ></input>
+        <input
+          type="button"
+          value={isPause ? "再生開始" : "一時停止"}
+          onClick={() => {
+            setPause(!isPause);
           }}
         ></input>
       </div>
