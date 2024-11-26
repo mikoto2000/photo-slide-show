@@ -1,8 +1,8 @@
 [package]
 name = "photo-slide-show"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "A Photo slide show app."
+authors = ["mikoto2000"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
