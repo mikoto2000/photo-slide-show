@@ -2,6 +2,9 @@
 
 フォトスライドショーアプリ。
 
+![photo-slide-show](https://github.com/user-attachments/assets/0e5b1199-5a91-4af5-9675-1321e96a43b5)
+
+
 # Features:
 
 - 指定したディレクトリ以下の画像を再帰的に探し、順番に表示していく
