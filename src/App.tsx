@@ -17,8 +17,6 @@ function App() {
   const [imageIndex, setImageIndex] = useState(0);
   const [isRandom, setRandom] = useState(true);
   const [isPause, setPause] = useState(false);
-  let initialized = false;
-
   const service: Service = useTauriService();
 
   useEffect(() => {
@@ -34,17 +32,15 @@ function App() {
           setIntervalValue(i);
         }
 
-        const r = await s.get<boolean>('isRandom');
-        if (r !== undefined) {
-          setRandom(r);
-        }
+        const savedIsRandom = await s.get<boolean>('isRandom');
+        const restoredIsRandom = savedIsRandom ?? true;
+        setRandom(restoredIsRandom);
 
-        //const d = await s.get<string>('dir');
-        //if (d) {
-        //  console.log(d);
-        //  setDir(d);
-        //  updateEntries(d);
-        //}
+        const savedDir = await s.get<string>('dir');
+        if (savedDir) {
+          setDir(savedDir);
+          await updateEntries(savedDir, restoredIsRandom);
+        }
       }
 
     })();
@@ -53,7 +49,7 @@ function App() {
 
   useEffect(() => {
     let intervalHandle = undefined;
-    if (!initialized && !isPause) {
+    if (!isPause && imageEntries.length > 0) {
       intervalHandle = setTimeout(async () => {
         if (dir && dir.length > 0) {
           const nextImageIndex = (imageIndex + 1) % imageEntries.length;
@@ -62,7 +58,6 @@ function App() {
           setCurrentImagePath(convertFileSrc(imageEntries[nextImageIndex].name));
         }
       }, intervalValue);
-      initialized = true;
     }
     return () => {
       if (intervalHandle) {
@@ -71,19 +66,24 @@ function App() {
     }
   }, [dir, intervalValue, imageEntries, imageIndex, isPause]);
 
-  async function updateEntries(dir: string) {
+  async function updateEntries(dir: string, random = isRandom) {
     try {
       console.log(`dir: ${dir}`);
       const entries = await service.readDir(dir);
       console.log(entries);
       const filterdEntries = entries.filter((entry) => entry.isFile && isImage(entry));
       console.log(filterdEntries);
-      if (isRandom) {
+      if (random) {
         shuffle(filterdEntries);
       }
       console.log(filterdEntries);
       setImageEntries(filterdEntries);
       setImageIndex(0);
+      if (filterdEntries.length === 0) {
+        setFilePath("");
+        setCurrentImagePath("");
+        return;
+      }
       setTimeout(() => {
         setCurrentImagePath(convertFileSrc(filterdEntries[0].name));
       });
