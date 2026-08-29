@@ -3,6 +3,7 @@ import "./App.css";
 import { open } from "@tauri-apps/plugin-dialog";
 import { DirEntry } from "@tauri-apps/plugin-fs";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { load, Store } from "@tauri-apps/plugin-store";
 import { useTauriService } from "./service/TauriService";
 import { Service } from "./service/Service";
@@ -17,6 +18,7 @@ function App() {
   const [imageIndex, setImageIndex] = useState(0);
   const [isRandom, setRandom] = useState(true);
   const [isPause, setPause] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const service: Service = useTauriService();
 
   useEffect(() => {
@@ -45,6 +47,28 @@ function App() {
 
     })();
 
+  }, []);
+
+  useEffect(() => {
+    const appWindow = getCurrentWindow();
+
+    appWindow.isFullscreen().then(setIsFullscreen).catch(console.error);
+
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      if (event.repeat) {
+        return;
+      }
+
+      if (event.key === "F11") {
+        event.preventDefault();
+        await toggleFullscreen();
+      } else if (event.key === "Escape" && await appWindow.isFullscreen()) {
+        await setFullscreen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   useEffect(() => {
@@ -121,9 +145,27 @@ function App() {
     return ["jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff"].includes(ext.toLowerCase());
   }
 
+  async function setFullscreen(fullscreen: boolean) {
+    try {
+      await getCurrentWindow().setFullscreen(fullscreen);
+      setIsFullscreen(fullscreen);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function toggleFullscreen() {
+    try {
+      const fullscreen = await getCurrentWindow().isFullscreen();
+      await setFullscreen(!fullscreen);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   return (
-    <main className="container">
-      <div style={{ flexGrow: "1" }}>
+    <main className={`container${isFullscreen ? " fullscreen" : ""}`}>
+      <div className="controls" style={{ flexGrow: "1" }}>
         ランダム：<input
           type="checkbox"
           checked={isRandom}
@@ -165,9 +207,15 @@ function App() {
             setPause(!isPause);
           }}
         ></input>
+        <input
+          type="button"
+          value="フルスクリーン"
+          title="フルスクリーンに切り替える (F11)"
+          onClick={() => toggleFullscreen()}
+        ></input>
       </div>
-      <img src={currentImagePath} style={{ maxHeight: "90vh", objectFit: "contain" }}></img>
-      <div style={{ flexGrow: "1" }}>
+      <img className="slideshow-image" src={currentImagePath}></img>
+      <div className="file-path" style={{ flexGrow: "1" }}>
         <p>{filePath}</p>
       </div>
     </main >

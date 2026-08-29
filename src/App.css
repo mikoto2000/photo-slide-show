@@ -28,6 +28,27 @@
   text-align: center;
 }
 
+.slideshow-image {
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.container.fullscreen {
+  height: 100vh;
+  background: #000;
+}
+
+.fullscreen .controls,
+.fullscreen .file-path {
+  display: none;
+}
+
+.fullscreen .slideshow-image {
+  width: 100vw;
+  height: 100vh;
+  max-height: none;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
